@@ -98,7 +98,7 @@ export default function Index() {
         currentWh: data.current_watt ? parseFloat(data.current_watt) : 0,
         monthlyKwh: data.monthly_kwh ? parseFloat(data.monthly_kwh) : 0,
         temperature: data.temperature ? parseFloat(data.temperature) : 0,
-        powered: JSON.parse(data.powered) || false,
+        powered: data.powered ? JSON.parse(data.powered) : false,
       });
 
       // 실시간 차트 데이터 업데이트

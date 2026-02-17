@@ -10,7 +10,7 @@ export interface ChartResponse {
 }
 
 export interface CurrentDataResponse {
-  powered: string;
+  powered?: string;
   current_watt?: string;
   monthly_kwh?: string;
   temperature?: string;
