@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const API_CONFIG = {
   BASE_URL_KEY: 'dawon_api_base_url',
   SELECTED_DEVICE_ID_KEY: 'dawon_selected_device_id',
-  DEFAULT_BASE_URL: 'http://localhost:8000',
   TIMEOUT: 10_000,
   MAX_RETRIES: 3,
   RETRY_DELAY: 1_000,
@@ -13,13 +12,13 @@ export const APIStorage = {
   /**
    * Get base URL from AsyncStorage
    */
-  async getBaseURL(): Promise<string> {
+  async getBaseURL(): Promise<string | null> {
     try {
       const storedURL = await AsyncStorage.getItem(API_CONFIG.BASE_URL_KEY);
-      return storedURL || API_CONFIG.DEFAULT_BASE_URL;
+      return storedURL;
     } catch (error) {
       console.warn('Failed to get base URL from AsyncStorage:', error);
-      return API_CONFIG.DEFAULT_BASE_URL;
+      return null;
     }
   },
 
