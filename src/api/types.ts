@@ -11,9 +11,9 @@ export interface ChartResponse {
 
 export interface CurrentDataResponse {
   powered: string;
-  current_watt: string;
-  monthly_kwh: string;
-  temperature: string;
+  current_watt?: string;
+  monthly_kwh?: string;
+  temperature?: string;
 }
 
 export interface DeviceSchedules {

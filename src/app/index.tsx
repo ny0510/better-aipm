@@ -92,14 +92,14 @@ export default function Index() {
       console.log('Current data:', data);
 
       setCurrentData({
-        currentWh: parseFloat(data.current_watt) || 0,
-        monthlyKwh: parseFloat(data.monthly_kwh) || 0,
-        temperature: parseFloat(data.temperature) || 0,
+        currentWh: data.current_watt ? parseFloat(data.current_watt) : 0,
+        monthlyKwh: data.monthly_kwh ? parseFloat(data.monthly_kwh) : 0,
+        temperature: data.temperature ? parseFloat(data.temperature) : 0,
         powered: JSON.parse(data.powered) || false,
       });
 
       // 실시간 차트 데이터 업데이트
-      const newValue = parseFloat(data.current_watt) || 0;
+      const newValue = data.current_watt ? parseFloat(data.current_watt) : 0;
       setRealtimeChartData(prevData => {
         const newData = [...prevData, {value: newValue}];
         return newData.length > 50 ? newData.slice(1) : newData;
