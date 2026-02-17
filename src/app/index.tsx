@@ -124,6 +124,49 @@ export default function Index() {
     }
   };
 
+  const getPreviousDay = () => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return {today, yesterday};
+  };
+
+  const findDailyUsage = (data: ChartDataPoint[], todayStr: string, yesterdayStr: string) => {
+    let todayUsage = 0;
+    let yesterdayUsage = 0;
+
+    if (data && data.length > 0) {
+      const todayData = data.find(item => item.date.startsWith(todayStr));
+      const yesterdayData = data.find(item => item.date.startsWith(yesterdayStr));
+
+      if (todayData) {
+        todayUsage = todayData.value;
+      }
+      if (yesterdayData) {
+        yesterdayUsage = yesterdayData.value;
+      }
+    }
+
+    return {todayUsage, yesterdayUsage};
+  };
+
+  const calculateAverageAndMaxPower = (data: ChartDataPoint[], todayStr: string) => {
+    let averagePower = 0;
+    let maxPower = 0;
+
+    if (data && data.length > 0) {
+      const todayHourlyData = data.filter(item => item.date.startsWith(todayStr));
+
+      if (todayHourlyData.length > 0) {
+        const todayValues = todayHourlyData.map(item => item.value);
+        averagePower = todayValues.reduce((sum, value) => sum + value, 0) / todayValues.length;
+        maxPower = Math.max(...todayValues);
+      }
+    }
+
+    return {averagePower, maxPower};
+  };
+
   const loadDailyStats = async (device?: Device) => {
     try {
       const targetDevice = device || selectedDevice;
@@ -131,47 +174,15 @@ export default function Index() {
 
       const apiClient = new DawonAPIClient();
 
-      // 일별 사용량 데이터 가져오기 (이미 kWh 단위)
       const dailyResponse = await apiClient.getChartData(targetDevice.device_id, 'day', 'power');
-      // 시간별 데이터로 평균/최대 소비전력 계산
       const hourlyResponse = await apiClient.getChartData(targetDevice.device_id, 'hour', 'power');
 
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-
+      const {today, yesterday} = getPreviousDay();
       const todayStr = today.toISOString().split('T')[0];
       const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-      let todayUsage = 0;
-      let yesterdayUsage = 0;
-      let averagePower = 0;
-      let maxPower = 0;
-
-      // 일별 데이터에서 오늘/어제 사용량 찾기
-      if (dailyResponse.data && dailyResponse.data.length > 0) {
-        const todayData = dailyResponse.data.find(item => item.date.startsWith(todayStr));
-        const yesterdayData = dailyResponse.data.find(item => item.date.startsWith(yesterdayStr));
-
-        if (todayData) {
-          todayUsage = todayData.value;
-        }
-
-        if (yesterdayData) {
-          yesterdayUsage = yesterdayData.value;
-        }
-      }
-
-      // 시간별 데이터에서 평균/최대 소비전력 계산 (오늘 하루치)
-      if (hourlyResponse.data && hourlyResponse.data.length > 0) {
-        const todayHourlyData = hourlyResponse.data.filter(item => item.date.startsWith(todayStr));
-
-        if (todayHourlyData.length > 0) {
-          const todayValues = todayHourlyData.map(item => item.value);
-          averagePower = todayValues.reduce((sum, value) => sum + value, 0) / todayValues.length;
-          maxPower = Math.max(...todayValues);
-        }
-      }
+      const {todayUsage, yesterdayUsage} = findDailyUsage(dailyResponse.data || [], todayStr, yesterdayStr);
+      const {averagePower, maxPower} = calculateAverageAndMaxPower(hourlyResponse.data || [], todayStr);
 
       setDailyStats({
         todayUsage,
@@ -184,6 +195,39 @@ export default function Index() {
     }
   };
 
+  const getPreviousMonth = (month: number, year: number) => {
+    const lastMonth = month === 0 ? 11 : month - 1;
+    const lastMonthYear = month === 0 ? year - 1 : year;
+    return {month: lastMonth, year: lastMonthYear};
+  };
+
+  const findDataByMonthAndYear = (data: ChartDataPoint[], month: number, year: number) => {
+    return data.find(item => {
+      const date = new Date(item.date);
+      return date.getMonth() === month && date.getFullYear() === year;
+    });
+  };
+
+  const extractCurrentAndPreviousMonthValues = (data: ChartDataPoint[], thisMonth: number, thisYear: number) => {
+    let thisMonthValue = 0;
+    let lastMonthValue = 0;
+
+    if (data && data.length > 0) {
+      const thisMonthData = findDataByMonthAndYear(data, thisMonth, thisYear);
+      if (thisMonthData) {
+        thisMonthValue = thisMonthData.value;
+      }
+
+      const {month: lastMonth, year: lastMonthYear} = getPreviousMonth(thisMonth, thisYear);
+      const lastMonthData = findDataByMonthAndYear(data, lastMonth, lastMonthYear);
+      if (lastMonthData) {
+        lastMonthValue = lastMonthData.value;
+      }
+    }
+
+    return {thisMonthValue, lastMonthValue};
+  };
+
   const loadMonthlyStats = async (device?: Device) => {
     try {
       const targetDevice = device || selectedDevice;
@@ -191,69 +235,15 @@ export default function Index() {
 
       const apiClient = new DawonAPIClient();
 
-      // 월별 전력 사용량 데이터 가져오기
       const powerResponse = await apiClient.getChartData(targetDevice.device_id, 'month', 'power');
-      // 월별 요금 데이터 가져오기
       const feeResponse = await apiClient.getChartData(targetDevice.device_id, 'month', 'fee');
 
       const now = new Date();
       const thisMonth = now.getMonth();
       const thisYear = now.getFullYear();
 
-      let thisMonthUsage = 0;
-      let lastMonthUsage = 0;
-      let thisMonthFee = 0;
-      let lastMonthFee = 0;
-
-      // 이번 달 전력 사용량 계산 (월별 데이터에서 현재 월 찾기)
-      if (powerResponse.data && powerResponse.data.length > 0) {
-        const thisMonthData = powerResponse.data.find(item => {
-          const date = new Date(item.date);
-          return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
-        });
-
-        if (thisMonthData) {
-          thisMonthUsage = thisMonthData.value;
-        }
-
-        // 지난 달 데이터 찾기
-        const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
-        const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
-
-        const lastMonthData = powerResponse.data.find(item => {
-          const date = new Date(item.date);
-          return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
-        });
-
-        if (lastMonthData) {
-          lastMonthUsage = lastMonthData.value;
-        }
-      }
-
-      // 이번 달 요금 계산 (월별 데이터에서 현재 월 찾기)
-      if (feeResponse.data && feeResponse.data.length > 0) {
-        const thisMonthFeeData = feeResponse.data.find(item => {
-          const date = new Date(item.date);
-          return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
-        });
-
-        if (thisMonthFeeData) {
-          thisMonthFee = thisMonthFeeData.value;
-        }
-
-        // 지난 달 요금 데이터 찾기
-        const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
-        const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
-
-        const lastMonthFeeData = feeResponse.data.find(item => {
-          const date = new Date(item.date);
-          return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
-        });
-
-        if (lastMonthFeeData) {
-          lastMonthFee = lastMonthFeeData.value;
-        }
-      }
+      const {thisMonthValue: thisMonthUsage, lastMonthValue: lastMonthUsage} = extractCurrentAndPreviousMonthValues(powerResponse.data || [], thisMonth, thisYear);
+      const {thisMonthValue: thisMonthFee, lastMonthValue: lastMonthFee} = extractCurrentAndPreviousMonthValues(feeResponse.data || [], thisMonth, thisYear);
 
       setMonthlyStats({
         thisMonthUsage,
