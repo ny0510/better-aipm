@@ -63,7 +63,7 @@ export default function Onboarding() {
       if (isConnectable) {
         setValidationStatus('valid');
         setErrorMessage('');
-        router.replace(`/onboarding/select-device?serverUrl=${encodeURIComponent(serverUrl)}`);
+        router.push(`/onboarding/select-device?serverUrl=${encodeURIComponent(serverUrl)}`);
       } else {
         setValidationStatus('invalid');
         setErrorMessage('서버에 연결할 수 없습니다. URL을 확인해주세요.');
