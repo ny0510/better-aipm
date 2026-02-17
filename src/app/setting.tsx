@@ -61,6 +61,40 @@ export default function Setting() {
           </TouchableOpacity>
 
           <View style={s.separator} />
+
+          <TouchableOpacity
+            style={s.settingItem}
+            onPress={() => {
+              Alert.alert('모든 데이터 초기화', '모든 앱 데이터를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.', [
+                {
+                  text: '취소',
+                  style: 'cancel',
+                },
+                {
+                  text: '초기화',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      await AsyncStorage.clear();
+                      router.replace('/onboarding');
+                    } catch (error) {
+                      console.error('Failed to reset all data:', error);
+                      Alert.alert('오류', '데이터 초기화에 실패했습니다.');
+                    }
+                  },
+                },
+              ]);
+            }}
+            activeOpacity={0.7}>
+            <View style={s.settingItemLeft}>
+              <MaterialIcons name="delete-forever" size={24} color={colors.text} />
+              <View style={{flexShrink: 1}}>
+                <Text style={s.settingItemTitle}>모든 데이터 초기화</Text>
+                <Text style={s.settingItemSubtitle}>앱의 모든 데이터를 초기화합니다</Text>
+              </View>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} />
+          </TouchableOpacity>
         </Card>
 
         <Card>
