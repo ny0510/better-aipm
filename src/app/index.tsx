@@ -42,7 +42,7 @@ export default function Index() {
   // 데이터 로드
   useEffect(() => {
     loadInitialData();
-    const interval = setInterval(loadCurrentData, 10_000);
+    const interval = setInterval(loadCurrentData, 30_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -72,7 +72,10 @@ export default function Index() {
       }
 
       setSelectedDevice(device);
-      await Promise.all([loadCurrentData(device), loadChartData(device), loadDailyStats(device), loadMonthlyStats(device)]);
+      await loadCurrentData(device);
+      await loadChartData(device);
+      await loadDailyStats(device);
+      await loadMonthlyStats(device);
     } catch (error) {
       console.error('Failed to load initial data:', error);
       Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
@@ -237,18 +240,37 @@ export default function Index() {
 
       const powerResponse = await apiClient.getChartData(targetDevice.device_id, 'month', 'power');
       const feeResponse = await apiClient.getChartData(targetDevice.device_id, 'month', 'fee');
+      const dailyFeeResponse = await apiClient.getChartData(targetDevice.device_id, 'day', 'fee');
 
       const now = new Date();
       const thisMonth = now.getMonth();
       const thisYear = now.getFullYear();
 
       const {thisMonthValue: thisMonthUsage, lastMonthValue: lastMonthUsage} = extractCurrentAndPreviousMonthValues(powerResponse.data || [], thisMonth, thisYear);
-      const {thisMonthValue: thisMonthFee, lastMonthValue: lastMonthFee} = extractCurrentAndPreviousMonthValues(feeResponse.data || [], thisMonth, thisYear);
+      const {thisMonthValue: thisMonthFeeCumulative, lastMonthValue: lastMonthFee} = extractCurrentAndPreviousMonthValues(feeResponse.data || [], thisMonth, thisYear);
+
+      const currentDay = now.getDate();
+      const daysInMonth = new Date(thisYear, thisMonth + 1, 0).getDate();
+
+      const thisMonthDailyFees = (dailyFeeResponse.data || []).filter(item => {
+        const date = new Date(item.date);
+        return date.getMonth() === thisMonth && date.getFullYear() === thisYear;
+      });
+
+      let estimatedMonthlyFee = thisMonthFeeCumulative;
+      if (thisMonthDailyFees.length > 0) {
+        const totalDailyFee = thisMonthDailyFees.reduce((sum, item) => sum + item.value, 0);
+        const avgDailyFee = totalDailyFee / thisMonthDailyFees.length;
+        estimatedMonthlyFee = avgDailyFee * daysInMonth;
+      } else if (currentDay > 0) {
+        const avgDailyFee = thisMonthFeeCumulative / currentDay;
+        estimatedMonthlyFee = avgDailyFee * daysInMonth;
+      }
 
       setMonthlyStats({
         thisMonthUsage,
         lastMonthUsage,
-        thisMonthFee,
+        thisMonthFee: estimatedMonthlyFee,
         lastMonthFee,
       });
     } catch (error) {
