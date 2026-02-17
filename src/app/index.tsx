@@ -308,7 +308,7 @@ export default function Index() {
 
   return (
     <View style={gs.container}>
-      <Header />
+      <Header deviceName={selectedDevice?.device_profile.display_name} />
 
       <ScrollView style={gs.scrollView} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
         <PowerCard currentWh={currentData.currentWh} data={realtimeChartData} />

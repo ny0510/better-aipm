@@ -2,15 +2,20 @@ import {useRouter} from 'expo-router';
 import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
+import {Device} from '@/api/types';
 import colors from '@/styles/theme/colors';
 import {MaterialIcons} from '@expo/vector-icons';
 
-export default function Header() {
+interface HeaderProps {
+  deviceName?: string;
+}
+
+export default function Header({deviceName}: HeaderProps) {
   const router = useRouter();
 
   return (
     <View style={s.header}>
-      <Text style={s.headerTitle}>MahiroLab</Text>
+      <Text style={s.headerTitle}>{deviceName || 'Better AIPM'}</Text>
       <TouchableOpacity onPress={() => router.navigate('/setting')} activeOpacity={0.7}>
         <MaterialIcons name="settings" size={24} color={colors.text} />
       </TouchableOpacity>
