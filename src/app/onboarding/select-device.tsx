@@ -76,7 +76,13 @@ export default function SelectDevice() {
         onPress: async () => {
           try {
             await APIStorage.setSelectedDeviceId(device.device_id);
-            router.replace('/');
+            // Verify the device ID was saved before navigating
+            const savedDeviceId = await APIStorage.getSelectedDeviceId();
+            if (savedDeviceId === device.device_id) {
+              router.replace('/');
+            } else {
+              throw new Error('Device ID verification failed');
+            }
           } catch (error) {
             console.error('Failed to save selected device:', error);
             Alert.alert('오류', '디바이스 선택을 저장하는데 실패했습니다.');

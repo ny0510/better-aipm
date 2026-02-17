@@ -26,6 +26,7 @@ export default function Index() {
   const [chartType, setChartType] = useState<Target>('hour');
   const [dataType, setDataType] = useState<Metric>('power');
   const [loading, setLoading] = useState(true);
+  const [hasShownError, setHasShownError] = useState(false);
   const [dailyStats, setDailyStats] = useState({
     todayUsage: 0,
     yesterdayUsage: 0,
@@ -65,8 +66,11 @@ export default function Index() {
 
       const device = await DeviceManager.getSelectedDevice();
       if (!device) {
-        Alert.alert('알림', '선택된 디바이스가 없습니다. 설정에서 디바이스를 선택해주세요.');
         setLoading(false);
+        if (!hasShownError) {
+          setHasShownError(true);
+          Alert.alert('알림', '선택된 디바이스가 없습니다. 설정에서 디바이스를 선택해주세요.');
+        }
         router.replace(`/onboarding/select-device?serverUrl=${encodeURIComponent(baseUrl)}`);
         return;
       }
@@ -78,7 +82,10 @@ export default function Index() {
       await loadMonthlyStats(device);
     } catch (error) {
       console.error('Failed to load initial data:', error);
-      Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
+      if (!hasShownError) {
+        setHasShownError(true);
+        Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
+      }
     } finally {
       setLoading(false);
     }
