@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import {Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {LineChart} from 'react-native-gifted-charts';
 
-import {DawonAPIClient, DeviceManager, dawonAPI} from '@/api';
+import {APIStorage, DawonAPIClient, DeviceManager, dawonAPI} from '@/api';
 import {ChartDataPoint, Device, Metric, Target} from '@/api/types';
 import Card from '@/components/Card';
 import Header from '@/components/Header';
@@ -55,11 +55,19 @@ export default function Index() {
 
   const loadInitialData = async () => {
     try {
+      // Check if base URL is set first
+      const baseUrl = await APIStorage.getBaseURL();
+      if (!baseUrl) {
+        setLoading(false);
+        router.replace('/onboarding');
+        return;
+      }
+
       const device = await DeviceManager.getSelectedDevice();
       if (!device) {
         Alert.alert('알림', '선택된 디바이스가 없습니다. 설정에서 디바이스를 선택해주세요.');
         setLoading(false);
-        router.replace(`/onboarding/select-device?serverUrl=${encodeURIComponent(await dawonAPI.getBaseURL())}`);
+        router.replace(`/onboarding/select-device?serverUrl=${encodeURIComponent(baseUrl)}`);
         return;
       }
 
@@ -81,6 +89,7 @@ export default function Index() {
 
       const apiClient = new DawonAPIClient();
       const data = await apiClient.getCurrentData(targetDevice.device_id);
+      console.log('Current data:', data);
 
       setCurrentData({
         currentWh: parseFloat(data.current_watt) || 0,
