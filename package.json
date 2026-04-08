@@ -9,7 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "@expo/vector-icons": "^15.0.3",
+    "@expo/vector-icons": "^15.1.1",
     "@react-native-async-storage/async-storage": "2.1.2",
     "expo": "~53.0.27",
     "expo-constants": "~17.1.8",
@@ -22,17 +22,17 @@
     "expo-system-ui": "~5.0.11",
     "react": "19.0.0",
     "react-native": "0.79.5",
-    "react-native-gifted-charts": "^1.4.74",
+    "react-native-gifted-charts": "^1.4.76",
     "react-native-reanimated-skeleton": "^1.6.0",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-svg": "^15.15.3",
+    "react-native-svg": "^15.15.4",
     "react-native-touchable-scale": "^2.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "@types/node": "^24.10.13",
+    "@types/node": "^24.12.2",
     "@types/react": "~19.0.14",
     "prettier": "^3.8.1",
     "typescript": "~5.8.3"

@@ -33,6 +33,6 @@ const s = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'SuitBold',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 16,
   },
 });

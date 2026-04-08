@@ -1,6 +1,6 @@
 import {Link, router} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {LineChart} from 'react-native-gifted-charts';
 
 import {APIStorage, DawonAPIClient, DeviceManager, dawonAPI} from '@/api';
@@ -26,6 +26,7 @@ export default function Index() {
   const [chartType, setChartType] = useState<Target>('hour');
   const [dataType, setDataType] = useState<Metric>('power');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasShownError, setHasShownError] = useState(false);
   const [dailyStats, setDailyStats] = useState({
     todayUsage: 0,
@@ -319,6 +320,19 @@ export default function Index() {
     }));
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      if (selectedDevice) {
+        await Promise.all([loadCurrentData(selectedDevice), loadChartData(selectedDevice), loadDailyStats(selectedDevice), loadMonthlyStats(selectedDevice)]);
+      }
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={[gs.container, {justifyContent: 'center', alignItems: 'center'}]}>
@@ -337,9 +351,9 @@ export default function Index() {
 
   return (
     <View style={gs.container}>
-      <Header deviceName={selectedDevice?.device_profile.display_name} />
+      <Header deviceName={selectedDevice?.device_profile.display_name} onDeviceNamePress={() => router.push('/device-detail')} />
 
-      <ScrollView style={gs.scrollView} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView style={gs.scrollView} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />}>
         <PowerCard currentWh={currentData.currentWh} data={realtimeChartData} />
 
         <Card>
@@ -454,7 +468,7 @@ export default function Index() {
           <InfoCard
             title="오늘 사용량"
             value={Math.round(dailyStats.todayUsage * 100) / 100}
-            unit="kWh"
+            unit="Wh"
             icon="energy-savings-leaf"
             changeValue={Math.round(Math.abs(dailyStats.todayUsage - dailyStats.yesterdayUsage) * 100) / 100}
             changeType={dailyStats.todayUsage >= dailyStats.yesterdayUsage ? 'increase' : 'decrease'}

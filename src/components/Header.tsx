@@ -8,14 +8,17 @@ import {MaterialIcons} from '@expo/vector-icons';
 
 interface HeaderProps {
   deviceName?: string;
+  onDeviceNamePress?: () => void;
 }
 
-export default function Header({deviceName}: HeaderProps) {
+export default function Header({deviceName, onDeviceNamePress}: HeaderProps) {
   const router = useRouter();
 
   return (
     <View style={s.header}>
-      <Text style={s.headerTitle}>{deviceName || 'Better AIPM'}</Text>
+      <TouchableOpacity onPress={onDeviceNamePress} activeOpacity={0.7} disabled={!onDeviceNamePress}>
+        <Text style={s.headerTitle}>{deviceName || 'Better AIPM'}</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.navigate('/setting')} activeOpacity={0.7}>
         <MaterialIcons name="settings" size={24} color={colors.text} />
       </TouchableOpacity>

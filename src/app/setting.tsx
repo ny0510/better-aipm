@@ -14,13 +14,13 @@ export default function Setting() {
   const router = useRouter();
 
   const handleResetDevice = () => {
-    Alert.alert('디바이스 초기화', '선택된 디바이스를 초기화하시겠습니까?', [
+    Alert.alert('디바이스 재선택', '디바이스를 재선택하시겠습니까? 현재 선택된 디바이스 정보가 초기화되고, 디바이스 선택 화면으로 돌아갑니다.', [
       {
         text: '취소',
         style: 'cancel',
       },
       {
-        text: '초기화',
+        text: '재선택',
         style: 'destructive',
         onPress: async () => {
           try {
@@ -28,7 +28,7 @@ export default function Setting() {
             router.replace(`/onboarding/select-device?serverUrl=${encodeURIComponent(await dawonAPI.getBaseURL())}`);
           } catch (error) {
             console.error('Failed to reset device:', error);
-            Alert.alert('오류', '디바이스 초기화에 실패했습니다.');
+            Alert.alert('오류', '디바이스 재선택에 실패했습니다.');
           }
         },
       },
@@ -46,15 +46,13 @@ export default function Setting() {
       </View>
 
       <ScrollView style={gs.scrollView} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
-        <Card>
-          <Text style={s.sectionTitle}>개발자 옵션</Text>
-
+        <Card title="디바이스 관리">
           <TouchableOpacity style={s.settingItem} onPress={handleResetDevice} activeOpacity={0.7}>
             <View style={s.settingItemLeft}>
               <MaterialIcons name="device-hub" size={24} color={colors.text} />
               <View style={{flexShrink: 1}}>
-                <Text style={s.settingItemTitle}>디바이스 초기화</Text>
-                <Text style={s.settingItemSubtitle}>선택된 디바이스를 초기화합니다</Text>
+                <Text style={s.settingItemTitle}>디바이스 재선택</Text>
+                <Text style={s.settingItemSubtitle}>디바이스 선택 화면으로 돌아갑니다</Text>
               </View>
             </View>
             <MaterialIcons name="chevron-right" size={24} color={colors.textSecondary} />
@@ -97,9 +95,7 @@ export default function Setting() {
           </TouchableOpacity>
         </Card>
 
-        <Card>
-          <Text style={s.sectionTitle}>앱 정보</Text>
-
+        <Card title="앱 정보">
           <View style={s.infoItem}>
             <View style={s.settingItemLeft}>
               <MaterialIcons name="info" size={24} color={colors.text} />
@@ -110,7 +106,7 @@ export default function Setting() {
             </View>
           </View>
 
-          <View style={s.separator} />
+          {/* <View style={s.separator} /> */}
         </Card>
       </ScrollView>
     </View>
@@ -132,12 +128,6 @@ const s = StyleSheet.create({
   },
   scrollContent: {
     gap: 14,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'SuitBold',
-    color: colors.text,
-    marginBottom: 16,
   },
   settingItem: {
     flexDirection: 'row',
