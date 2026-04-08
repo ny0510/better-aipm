@@ -30,6 +30,24 @@ export default function ChartCard({chartData, oldChartData, chartType, dataType,
     {key: 'fee', label: '예상요금'},
   ];
 
+  const getLegendText = () => {
+    switch (chartType) {
+      case 'hour':
+        return {current: '오늘', previous: ''};
+      case 'day':
+        return {current: '이번달', previous: '전월'};
+      case 'month':
+        return {current: '올해', previous: '전년'};
+      default:
+        return {current: '이번달', previous: '전월'};
+    }
+  };
+
+  const legendText = getLegendText();
+  const showPreviousLegend = chartType !== 'hour';
+
+  const displayOldChartData = chartType === 'hour' ? [] : formatOldChartData();
+
   return (
     <Card>
       <View style={{gap: 4, marginBottom: 18}}>
@@ -56,7 +74,7 @@ export default function ChartCard({chartData, oldChartData, chartType, dataType,
       <Skeleton isLoading={isLoading} boneColor={colors.border} highlightColor={colors.textSecondary + '20'} containerStyle={{marginBottom: 16}} layout={[{key: 'chart', width: '100%', height: 150, borderRadius: 12}]}>
         {!isLoading && (
           <LineChart
-            data={formatOldChartData()}
+            data={displayOldChartData}
             data2={formatChartData()}
             hideDataPoints
             hideYAxisText
@@ -120,12 +138,14 @@ export default function ChartCard({chartData, oldChartData, chartType, dataType,
         <Skeleton isLoading={isLoading} boneColor={colors.border} highlightColor={colors.textSecondary + '20'} containerStyle={{flexDirection: 'row', justifyContent: 'center', gap: 20}}>
           <View style={s.legendItem}>
             <View style={[s.legendDot, {backgroundColor: colors.primary}]} />
-            <Text style={s.legendText}>이번달</Text>
+            <Text style={s.legendText}>{legendText.current}</Text>
           </View>
-          <View style={s.legendItem}>
-            <View style={[s.legendDot, {backgroundColor: colors.secondary}]} />
-            <Text style={s.legendText}>전{chartType === 'month' ? '년' : '월'}</Text>
-          </View>
+          {showPreviousLegend && (
+            <View style={s.legendItem}>
+              <View style={[s.legendDot, {backgroundColor: colors.secondary}]} />
+              <Text style={s.legendText}>{legendText.previous}</Text>
+            </View>
+          )}
         </Skeleton>
       </View>
     </Card>
