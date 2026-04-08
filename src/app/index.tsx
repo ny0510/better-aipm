@@ -21,21 +21,23 @@ export default function Index() {
   const [refreshing, setRefreshing] = useState(false);
 
   const getChartData = () => {
+    const labelInterval = chartType === 'hour' ? 4 : chartType === 'day' ? 5 : 2;
     return chartData.map((item, index) => ({
       ...item,
       value: item.value,
       date: formatDateLabel(item.date, chartType),
-      label: index % 5 === 0 ? formatDateLabel(item.date, chartType) : '',
+      label: index % labelInterval === 0 ? formatDateLabel(item.date, chartType) : '',
       unit: item.unit.replace('Won', '원'),
     }));
   };
 
   const getOldChartData = () => {
+    const labelInterval = chartType === 'hour' ? 4 : chartType === 'day' ? 5 : 2;
     if (oldChartData.length === 0 && chartData.length > 0) {
       return chartData.map((item, index) => ({
         value: 0,
         date: formatDateLabel(item.date, chartType),
-        label: index % 5 === 0 ? formatDateLabel(item.date, chartType) : '',
+        label: index % labelInterval === 0 ? formatDateLabel(item.date, chartType) : '',
         unit: item.unit.replace('Won', '원'),
       }));
     }
@@ -43,7 +45,7 @@ export default function Index() {
       ...item,
       value: item.value,
       date: formatDateLabel(item.date, chartType),
-      label: index % 5 === 0 ? formatDateLabel(item.date, chartType) : '',
+      label: index % labelInterval === 0 ? formatDateLabel(item.date, chartType) : '',
       unit: item.unit.replace('Won', '원'),
     }));
   };
