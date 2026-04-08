@@ -156,8 +156,7 @@ export const DeviceManager = {
         return null;
       }
 
-      const apiClient = new DawonAPIClient();
-      const devices = await apiClient.getDevices();
+      const devices = await dawonAPI.getDevices();
       const device = devices.find(d => d.device_id === deviceId);
 
       return device || null;

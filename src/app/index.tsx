@@ -3,7 +3,7 @@ import {useEffect, useState} from 'react';
 import {Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {LineChart} from 'react-native-gifted-charts';
 
-import {APIStorage, DawonAPIClient, DeviceManager, dawonAPI} from '@/api';
+import {APIStorage, DeviceManager, dawonAPI} from '@/api';
 import {ChartDataPoint, Device, Metric, Target} from '@/api/types';
 import Card from '@/components/Card';
 import Header from '@/components/Header';
@@ -98,8 +98,7 @@ export default function Index() {
       const targetDevice = device || selectedDevice;
       if (!targetDevice) return;
 
-      const apiClient = new DawonAPIClient();
-      const data = await apiClient.getCurrentData(targetDevice.device_id);
+      const data = await dawonAPI.getCurrentData(targetDevice.device_id);
 
       setCurrentData({
         currentWh: data.current_watt ? parseFloat(data.current_watt) : 0,
@@ -124,8 +123,7 @@ export default function Index() {
       const targetDevice = device || selectedDevice;
       if (!targetDevice) return;
 
-      const apiClient = new DawonAPIClient();
-      const response = await apiClient.getChartData(targetDevice.device_id, chartType, dataType);
+      const response = await dawonAPI.getChartData(targetDevice.device_id, chartType, dataType);
 
       setChartData(response.data || []);
       setOldChartData(response.old_data || []);
@@ -139,10 +137,8 @@ export default function Index() {
       const targetDevice = device || selectedDevice;
       if (!targetDevice) return;
 
-      const apiClient = new DawonAPIClient();
-
-      const dailyResponse = await apiClient.getChartData(targetDevice.device_id, 'day', 'power');
-      const hourlyResponse = await apiClient.getChartData(targetDevice.device_id, 'hour', 'power');
+      const dailyResponse = await dawonAPI.getChartData(targetDevice.device_id, 'day', 'power');
+      const hourlyResponse = await dawonAPI.getChartData(targetDevice.device_id, 'hour', 'power');
 
       const {today, yesterday} = getPreviousDay();
       const todayStr = today.toISOString().split('T')[0];
@@ -167,11 +163,9 @@ export default function Index() {
       const targetDevice = device || selectedDevice;
       if (!targetDevice) return;
 
-      const apiClient = new DawonAPIClient();
-
-      const powerResponse = await apiClient.getChartData(targetDevice.device_id, 'month', 'power');
-      const feeResponse = await apiClient.getChartData(targetDevice.device_id, 'month', 'fee');
-      const dailyFeeResponse = await apiClient.getChartData(targetDevice.device_id, 'day', 'fee');
+      const powerResponse = await dawonAPI.getChartData(targetDevice.device_id, 'month', 'power');
+      const feeResponse = await dawonAPI.getChartData(targetDevice.device_id, 'month', 'fee');
+      const dailyFeeResponse = await dawonAPI.getChartData(targetDevice.device_id, 'day', 'fee');
 
       const now = new Date();
       const thisMonth = now.getMonth();
