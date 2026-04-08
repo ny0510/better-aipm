@@ -22,7 +22,7 @@ export default function PowerCard({currentWh, data}: {currentWh: number; data: {
       </View>
 
       <View style={s.chartContainer}>
-        <LineChart data={data} areaChart hideDataPoints spacing={20} hideYAxisText hideAxesAndRules color={colors.primary} startFillColor={colors.primary} startOpacity={0.8} endOpacity={0} adjustToWidth height={90} scrollToEnd disableScroll curved />
+        <LineChart data={data} areaChart hideDataPoints spacing={20} hideYAxisText hideAxesAndRules hideRules color={colors.primary} startFillColor={colors.primary} startOpacity={0.4} endOpacity={0} adjustToWidth height={90} scrollToEnd disableScroll curved />
         <LinearGradient colors={[colors.card, `${colors.card}00`]} start={{x: 0, y: 0}} end={{x: 1.5, y: 0}} locations={[0.1, 0.5]} style={s.chartGradient} />
       </View>
 
