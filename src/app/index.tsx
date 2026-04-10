@@ -16,7 +16,7 @@ import {formatDateLabel} from '@/utils/date';
 
 export default function Index() {
   const {selectedDevice, currentData, realtimeChartData, loading, loadCurrentData} = useDeviceData();
-  const {chartData, oldChartData, chartType, dataType, setChartType, setDataType, loadChartData} = useChartData(selectedDevice);
+  const {chartData, oldChartData, chartType, setChartType, loadChartData} = useChartData(selectedDevice);
   const {dailyStats, monthlyStats, loadAllStats} = useStats(selectedDevice);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -86,7 +86,7 @@ export default function Index() {
       <ScrollView style={gs.scrollView} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />}>
         <PowerCard currentWh={currentData.currentWh} data={realtimeChartData} />
 
-        <ChartCard chartData={chartData} oldChartData={oldChartData} chartType={chartType} dataType={dataType} onChartTypeChange={setChartType} onDataTypeChange={setDataType} formatChartData={getChartData} formatOldChartData={getOldChartData} isLoading={false} />
+        <ChartCard chartData={chartData} oldChartData={oldChartData} chartType={chartType} onChartTypeChange={setChartType} formatChartData={getChartData} formatOldChartData={getOldChartData} isLoading={false} />
 
         <View style={s.gridRow}>
           <InfoCard

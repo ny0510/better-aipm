@@ -1,20 +1,19 @@
 import {useEffect, useState} from 'react';
 
 import {dawonAPI} from '@/api';
-import {ChartDataPoint, Device, Metric, Target} from '@/api/types';
+import {ChartDataPoint, Device, Target} from '@/api/types';
 
 export function useChartData(selectedDevice: Device | null) {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [oldChartData, setOldChartData] = useState<ChartDataPoint[]>([]);
   const [chartType, setChartType] = useState<Target>('hour');
-  const [dataType, setDataType] = useState<Metric>('power');
 
   const loadChartData = async (device?: Device) => {
     const targetDevice = device || selectedDevice;
     if (!targetDevice) return;
 
     try {
-      const response = await dawonAPI.getChartData(targetDevice.device_id, chartType, dataType);
+      const response = await dawonAPI.getChartData(targetDevice.device_id, chartType, 'power');
 
       setChartData(response.data || []);
       setOldChartData(response.old_data || []);
@@ -27,15 +26,13 @@ export function useChartData(selectedDevice: Device | null) {
     if (selectedDevice) {
       loadChartData();
     }
-  }, [chartType, dataType, selectedDevice]);
+  }, [chartType, selectedDevice]);
 
   return {
     chartData,
     oldChartData,
     chartType,
-    dataType,
     setChartType,
-    setDataType,
     loadChartData,
   };
 }
