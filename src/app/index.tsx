@@ -2,7 +2,6 @@ import {router} from 'expo-router';
 import {useState} from 'react';
 import {RefreshControl, ScrollView, StyleSheet, Text, View} from 'react-native';
 
-import {Target} from '@/api/types';
 import ChartCard from '@/components/ChartCard';
 import Header from '@/components/Header';
 import InfoCard from '@/components/InfoCard';
@@ -16,7 +15,7 @@ import {formatDateLabel} from '@/utils/date';
 
 export default function Index() {
   const {selectedDevice, currentData, realtimeChartData, loading, loadCurrentData} = useDeviceData();
-  const {chartData, oldChartData, chartType, setChartType, loadChartData} = useChartData(selectedDevice);
+  const {chartData, oldChartData, feeMap, chartType, setChartType, isLoading: isChartLoading, loadChartData} = useChartData(selectedDevice);
   const {dailyStats, monthlyStats, loadAllStats} = useStats(selectedDevice);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -25,6 +24,7 @@ export default function Index() {
     return chartData.map((item, index) => ({
       ...item,
       value: item.value,
+      rawDate: item.date,
       date: formatDateLabel(item.date, chartType),
       label: index % labelInterval === 0 ? formatDateLabel(item.date, chartType) : '',
       unit: item.unit.replace('Won', '원'),
@@ -36,6 +36,7 @@ export default function Index() {
     if (oldChartData.length === 0 && chartData.length > 0) {
       return chartData.map((item, index) => ({
         value: 0,
+        rawDate: item.date,
         date: formatDateLabel(item.date, chartType),
         label: index % labelInterval === 0 ? formatDateLabel(item.date, chartType) : '',
         unit: item.unit.replace('Won', '원'),
@@ -44,6 +45,7 @@ export default function Index() {
     return oldChartData.map((item, index) => ({
       ...item,
       value: item.value,
+      rawDate: item.date,
       date: formatDateLabel(item.date, chartType),
       label: index % labelInterval === 0 ? formatDateLabel(item.date, chartType) : '',
       unit: item.unit.replace('Won', '원'),
@@ -86,7 +88,7 @@ export default function Index() {
       <ScrollView style={gs.scrollView} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />}>
         <PowerCard currentWh={currentData.currentWh} data={realtimeChartData} />
 
-        <ChartCard chartData={chartData} oldChartData={oldChartData} chartType={chartType} onChartTypeChange={setChartType} formatChartData={getChartData} formatOldChartData={getOldChartData} isLoading={false} />
+        <ChartCard chartData={chartData} oldChartData={oldChartData} chartType={chartType} feeMap={feeMap} onChartTypeChange={setChartType} formatChartData={getChartData} formatOldChartData={getOldChartData} isLoading={isChartLoading} />
 
         <View style={s.gridRow}>
           <InfoCard
