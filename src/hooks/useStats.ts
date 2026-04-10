@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 
 import {dawonAPI} from '@/api';
-import {ChartDataPoint, Device} from '@/api/types';
+import {Device} from '@/api/types';
 import {calculateAverageAndMaxPower, extractCurrentAndPreviousMonthValues, findDailyUsage, getPreviousDay} from '@/utils/date';
 
 interface DailyStats {
@@ -106,6 +106,12 @@ export function useStats(selectedDevice: Device | null) {
   const loadAllStats = async (device?: Device) => {
     await Promise.all([loadDailyStats(device), loadMonthlyStats(device)]);
   };
+
+  useEffect(() => {
+    if (selectedDevice) {
+      loadAllStats(selectedDevice);
+    }
+  }, [selectedDevice]);
 
   return {
     dailyStats,

@@ -24,7 +24,7 @@ export default function InfoCard({title, value, unit, icon, changeValue, changeT
       </View>
       <View style={s.infoContent}>
         <Text style={s.infoValue}>{typeof value === 'number' ? value.toLocaleString() : value}</Text>
-        <Text style={s.infoUnit}>{unit}</Text>
+        {unit && <Text style={s.infoUnit}>{unit}</Text>}
       </View>
       {changeValue && changeType && (
         <View style={s.changeContainer}>
