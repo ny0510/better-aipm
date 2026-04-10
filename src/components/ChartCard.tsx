@@ -44,9 +44,12 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
   const showPreviousLegend = chartType !== 'hour';
 
   const currentData = useMemo(() => formatChartData(), [chartData, chartType]);
-  const previousData = useMemo(() => (chartType === 'hour' ? currentData.map(d => ({...d, value: 0})) : formatOldChartData()), [oldChartData, chartType]);
+  const previousData = useMemo(() => (chartType === 'hour' ? [] : formatOldChartData()), [oldChartData, chartType]);
 
   const maxValue = useMemo(() => (chartData.length > 0 ? Math.max(...chartData.map(d => d.value)) * 1.2 : 100), [chartData]);
+
+  const feeLabel = chartType === 'hour' ? '오늘' : chartType === 'day' ? '이번달' : '올해';
+  const previousFeeLabel = chartType === 'day' ? '전월' : '전년';
 
   return (
     <Card>
@@ -61,8 +64,8 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
       </View>
 
       <LineChart
-        data={previousData}
-        data2={currentData}
+        data={currentData}
+        data2={previousData}
         hideDataPoints
         hideYAxisText
         hideAxesAndRules
@@ -72,12 +75,12 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
         initialSpacing={0}
         endSpacing={0}
         maxValue={maxValue}
-        color1={colors.secondary}
-        startFillColor1={colors.secondary}
-        startOpacity1={0.3}
-        color2={colors.primary}
-        startFillColor2={colors.primary}
-        startOpacity2={0.4}
+        color1={colors.primary}
+        startFillColor1={colors.primary}
+        startOpacity1={0.4}
+        color2={colors.secondary}
+        startFillColor2={colors.secondary}
+        startOpacity2={0.3}
         endOpacity={0}
         adjustToWidth
         height={150}
@@ -93,10 +96,10 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
           hidePointers: true,
           pointerColor: colors.textSecondary,
           pointerLabelComponent: items => {
-            if (!items || items.length === 0 || !items[1]) return null;
+            if (!items || items.length === 0 || !items[0]) return null;
 
-            const current = items[1];
-            const previous = items[0];
+            const current = items[0];
+            const previous = items.length >= 2 ? items[1] : null;
             const hasPrevious = previous && previous.value > 0;
 
             const currentFee = formatFee(currentFeeMap[current.rawDate]);
@@ -119,7 +122,7 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
                 </View>
                 {currentFee ? (
                   <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary + '99'}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{currentFee}</Text>
+                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${feeLabel} ${currentFee}`}</Text>
                   </View>
                 ) : null}
                 {hasPrevious && (
@@ -129,7 +132,7 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
                     </View>
                     {previousFee ? (
                       <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary + '99'}}>
-                        <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{previousFee}</Text>
+                        <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${previousFeeLabel} ${previousFee}`}</Text>
                       </View>
                     ) : null}
                   </>
