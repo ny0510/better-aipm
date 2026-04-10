@@ -10,14 +10,17 @@ interface ChartCardProps {
   chartData: any[];
   oldChartData: any[];
   chartType: string;
-  feeMap: Record<string, number>;
+  currentFeeMap: Record<string, number>;
+  oldFeeMap: Record<string, number>;
   onChartTypeChange: (type: any) => void;
   formatChartData: () => any[];
   formatOldChartData: () => any[];
   isLoading?: boolean;
 }
 
-export default function ChartCard({chartData, oldChartData, chartType, feeMap, onChartTypeChange, formatChartData, formatOldChartData, isLoading = false}: ChartCardProps) {
+const formatFee = (fee: number | undefined) => (fee !== undefined ? `${Math.round(fee).toLocaleString()}원` : '');
+
+export default function ChartCard({chartData, oldChartData, chartType, currentFeeMap, oldFeeMap, onChartTypeChange, formatChartData, formatOldChartData, isLoading = false}: ChartCardProps) {
   const chartTypeOptions = [
     {key: 'hour', label: '시간별'},
     {key: 'day', label: '일별'},
@@ -40,16 +43,10 @@ export default function ChartCard({chartData, oldChartData, chartType, feeMap, o
   const legendText = getLegendText();
   const showPreviousLegend = chartType !== 'hour';
 
-  const chartDataPrimary = useMemo(() => formatChartData(), [chartData, chartType]);
-  const chartDataSecondary = useMemo(() => (chartType === 'hour' ? [] : formatOldChartData()), [oldChartData, chartType]);
+  const currentData = useMemo(() => formatChartData(), [chartData, chartType]);
+  const previousData = useMemo(() => (chartType === 'hour' ? currentData.map(d => ({...d, value: 0})) : formatOldChartData()), [oldChartData, chartType]);
 
   const maxValue = useMemo(() => (chartData.length > 0 ? Math.max(...chartData.map(d => d.value)) * 1.2 : 100), [chartData]);
-
-  const getFeeForDate = (rawDate: string): string => {
-    const fee = feeMap[rawDate];
-    if (fee === undefined) return '';
-    return `${Math.round(fee).toLocaleString()}원`;
-  };
 
   return (
     <Card>
@@ -64,8 +61,8 @@ export default function ChartCard({chartData, oldChartData, chartType, feeMap, o
       </View>
 
       <LineChart
-        data={chartDataPrimary}
-        data2={chartDataSecondary}
+        data={previousData}
+        data2={currentData}
         hideDataPoints
         hideYAxisText
         hideAxesAndRules
@@ -96,15 +93,14 @@ export default function ChartCard({chartData, oldChartData, chartType, feeMap, o
           hidePointers: true,
           pointerColor: colors.textSecondary,
           pointerLabelComponent: items => {
-            if (!items || items.length === 0) return null;
+            if (!items || items.length === 0 || !items[1]) return null;
 
-            const hasSecondary = items.length >= 2 && items[1]?.value !== undefined;
-            const secondary = hasSecondary ? items[1] : null;
-            const primary = secondary ? items[0] : items[0];
+            const current = items[1];
+            const previous = items[0];
+            const hasPrevious = previous && previous.value > 0;
 
-            if (!primary) return null;
-
-            const feeText = getFeeForDate(primary.rawDate || '');
+            const currentFee = formatFee(currentFeeMap[current.rawDate]);
+            const previousFee = hasPrevious ? formatFee(oldFeeMap[previous.rawDate]) : '';
 
             return (
               <View
@@ -116,21 +112,28 @@ export default function ChartCard({chartData, oldChartData, chartType, feeMap, o
                   gap: 4,
                 }}>
                 <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.card}}>
-                  <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.text, fontSize: 13}}>{primary.date}</Text>
+                  <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.text, fontSize: 13}}>{current.date}</Text>
                 </View>
-                {secondary && (
-                  <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${secondary.value.toFixed(1)} ${secondary.unit}`}</Text>
-                  </View>
-                )}
-                <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary}}>
-                  <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${primary.value.toFixed(1)} ${primary.unit}`}</Text>
+                <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary}}>
+                  <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${current.value.toFixed(1)} ${current.unit}`}</Text>
                 </View>
-                {feeText ? (
-                  <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.textSecondary}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{feeText}</Text>
+                {currentFee ? (
+                  <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary + '99'}}>
+                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{currentFee}</Text>
                   </View>
                 ) : null}
+                {hasPrevious && (
+                  <>
+                    <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary}}>
+                      <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${previous.value.toFixed(1)} ${previous.unit}`}</Text>
+                    </View>
+                    {previousFee ? (
+                      <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary + '99'}}>
+                        <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{previousFee}</Text>
+                      </View>
+                    ) : null}
+                  </>
+                )}
               </View>
             );
           },

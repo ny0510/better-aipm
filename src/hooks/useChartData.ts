@@ -10,10 +10,10 @@ interface FeeMap {
 export function useChartData(selectedDevice: Device | null) {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [oldChartData, setOldChartData] = useState<ChartDataPoint[]>([]);
-  const [feeMap, setFeeMap] = useState<FeeMap>({});
+  const [currentFeeMap, setCurrentFeeMap] = useState<FeeMap>({});
+  const [oldFeeMap, setOldFeeMap] = useState<FeeMap>({});
   const [chartType, setChartType] = useState<Target>('hour');
   const [isLoading, setIsLoading] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
 
   const loadChartData = async (device?: Device) => {
     const targetDevice = device || selectedDevice;
@@ -26,14 +26,15 @@ export function useChartData(selectedDevice: Device | null) {
       setChartData(powerResponse.data || []);
       setOldChartData(powerResponse.old_data || []);
 
-      const newFeeMap: FeeMap = {};
-      for (const item of feeResponse.data || []) {
-        newFeeMap[item.date] = item.value;
-      }
-      for (const item of feeResponse.old_data || []) {
-        newFeeMap[item.date] = item.value;
-      }
-      setFeeMap(newFeeMap);
+      const buildMap = (items: ChartDataPoint[]) => {
+        const map: FeeMap = {};
+        for (const item of items) {
+          map[item.date] = item.value;
+        }
+        return map;
+      };
+      setCurrentFeeMap(buildMap(feeResponse.data || []));
+      setOldFeeMap(buildMap(feeResponse.old_data || []));
     } catch (error) {
       console.error('Failed to load chart data:', error);
     } finally {
@@ -50,7 +51,8 @@ export function useChartData(selectedDevice: Device | null) {
   return {
     chartData,
     oldChartData,
-    feeMap,
+    currentFeeMap,
+    oldFeeMap,
     chartType,
     setChartType,
     isLoading,
