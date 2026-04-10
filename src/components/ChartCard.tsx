@@ -48,9 +48,6 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
 
   const maxValue = useMemo(() => (chartData.length > 0 ? Math.max(...chartData.map(d => d.value)) * 1.2 : 100), [chartData]);
 
-  const feeLabel = chartType === 'hour' ? '오늘' : chartType === 'day' ? '이번달' : '올해';
-  const previousFeeLabel = chartType === 'day' ? '전월' : '전년';
-
   return (
     <Card>
       <View style={{marginBottom: 18}}>
@@ -121,8 +118,8 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
                   <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${current.value.toFixed(1)} ${current.unit}`}</Text>
                 </View>
                 {currentFee ? (
-                  <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary + '99'}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${feeLabel} ${currentFee}`}</Text>
+                  <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary}}>
+                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{currentFee}</Text>
                   </View>
                 ) : null}
                 {hasPrevious && (
@@ -131,8 +128,8 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
                       <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${previous.value.toFixed(1)} ${previous.unit}`}</Text>
                     </View>
                     {previousFee ? (
-                      <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary + '99'}}>
-                        <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${previousFeeLabel} ${previousFee}`}</Text>
+                      <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary}}>
+                        <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{previousFee}</Text>
                       </View>
                     ) : null}
                   </>
