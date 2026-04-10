@@ -110,40 +110,44 @@ export default function ChartCard({chartData, oldChartData, chartType, dataType,
           height={150}
           scrollToEnd
           curved
-          pointerConfig={{
-            activatePointersOnLongPress: true,
-            activatePointersDelay: 300,
-            autoAdjustPointerLabelPosition: true,
-            pointerStripUptoDataPoint: true,
-            pointerStripColor: colors.primary,
-            pointerStripWidth: 2,
-            stripOverPointer: true,
-            hidePointers: true,
-            pointerColor: colors.textSecondary,
-            pointerLabelComponent: items => {
-              return (
-                <View
-                  style={{
-                    height: 90,
-                    minWidth: 100,
-                    justifyContent: 'center',
-                    marginTop: 30,
-                    marginLeft: -40,
-                    gap: 6,
-                  }}>
-                  <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.card}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.text}}>{items[1].date}</Text>
-                  </View>
-                  <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.primary}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background}}>{`${items[1].value.toFixed(1)} ${items[1].unit}`}</Text>
-                  </View>
-                  <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.secondary}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background}}>{`${items[0].value.toFixed(1)} ${items[0].unit}`}</Text>
-                  </View>
-                </View>
-              );
-            },
-          }}
+          pointerConfig={
+            chartType === 'hour'
+              ? undefined
+              : {
+                  activatePointersOnLongPress: true,
+                  activatePointersDelay: 300,
+                  autoAdjustPointerLabelPosition: true,
+                  pointerStripUptoDataPoint: true,
+                  pointerStripColor: colors.primary,
+                  pointerStripWidth: 2,
+                  stripOverPointer: true,
+                  hidePointers: true,
+                  pointerColor: colors.textSecondary,
+                  pointerLabelComponent: items => {
+                    return (
+                      <View
+                        style={{
+                          height: 90,
+                          minWidth: 100,
+                          justifyContent: 'center',
+                          marginTop: 30,
+                          marginLeft: -40,
+                          gap: 6,
+                        }}>
+                        <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.card}}>
+                          <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.text}}>{items[1].date}</Text>
+                        </View>
+                        <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.primary}}>
+                          <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background}}>{`${items[1].value.toFixed(1)} ${items[1].unit}`}</Text>
+                        </View>
+                        <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.secondary}}>
+                          <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background}}>{`${items[0].value.toFixed(1)} ${items[0].unit}`}</Text>
+                        </View>
+                      </View>
+                    );
+                  },
+                }
+          }
         />
       )}
 
