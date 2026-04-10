@@ -46,7 +46,8 @@ export default function ChartCard({chartData, oldChartData, chartType, dataType,
   const legendText = getLegendText();
   const showPreviousLegend = chartType !== 'hour';
 
-  const displayOldChartData = chartType === 'hour' ? [] : formatOldChartData();
+  const chartDataPrimary = formatChartData();
+  const chartDataSecondary = chartType === 'hour' ? [] : formatOldChartData();
 
   return (
     <Card>
@@ -87,8 +88,8 @@ export default function ChartCard({chartData, oldChartData, chartType, dataType,
         <Skeleton width={340} height={150} borderRadius={12} />
       ) : (
         <LineChart
-          data={displayOldChartData}
-          data2={formatChartData()}
+          data={chartDataPrimary}
+          data2={chartDataSecondary}
           hideDataPoints
           hideYAxisText
           hideAxesAndRules
