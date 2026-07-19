@@ -144,7 +144,6 @@ export default function Index() {
         </View>
 
         <View style={s.gridRow}>
-          <InfoCard title="장치 내부온도" value={Math.round(currentData.temperature)} unit="°C" icon="thermostat" />
           <InfoCard
             title="이번 달 예상 요금"
             value={Math.round(monthlyStats.thisMonthFee)}
@@ -154,9 +153,11 @@ export default function Index() {
             changeType={monthlyStats.thisMonthFee >= monthlyStats.lastMonthFee ? 'increase' : 'decrease'}
             changeLabel="전월대비"
           />
+          <InfoCard title="이번 달 누적 요금" value={Math.round(monthlyStats.thisMonthFeeCumulative)} unit="원" icon="receipt-long" />
         </View>
 
         <View style={s.gridRow}>
+          <InfoCard title="장치 내부온도" value={Math.round(currentData.temperature)} unit="°C" icon="thermostat" />
           <InfoCard title="디바이스 상태" value={currentData.powered ? '켜짐' : '꺼짐'} unit="" icon="power" />
         </View>
       </ScrollView>

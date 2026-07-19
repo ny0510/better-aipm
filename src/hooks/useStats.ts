@@ -16,6 +16,7 @@ interface MonthlyStats {
   lastMonthUsage: number;
   thisMonthFee: number;
   lastMonthFee: number;
+  thisMonthFeeCumulative: number;
 }
 
 export function useStats(selectedDevice: Device | null) {
@@ -30,6 +31,7 @@ export function useStats(selectedDevice: Device | null) {
     lastMonthUsage: 0,
     thisMonthFee: 0,
     lastMonthFee: 0,
+    thisMonthFeeCumulative: 0,
   });
 
   const loadDailyStats = async (device?: Device) => {
@@ -97,6 +99,7 @@ export function useStats(selectedDevice: Device | null) {
         lastMonthUsage,
         thisMonthFee: estimatedMonthlyFee,
         lastMonthFee,
+        thisMonthFeeCumulative,
       });
     } catch (error) {
       console.error('Failed to load monthly stats:', error);
