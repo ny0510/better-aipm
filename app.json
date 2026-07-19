@@ -5,9 +5,6 @@
     "scheme": "better-aipm",
     "version": "1.0.0",
     "userInterfaceStyle": "automatic",
-    "plugins": [
-      "expo-router",
-      "expo-font"
-    ]
+    "plugins": ["expo-router", "expo-font"]
   }
 }
