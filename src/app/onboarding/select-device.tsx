@@ -1,12 +1,14 @@
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import {APIStorage, DawonAPIClient, DeviceManager} from '@/api';
 import {Device} from '@/api/types';
 import Card from '@/components/Card';
-import gs from '@/styles/global';
-import colors from '@/styles/theme/colors';
+import RetryState from '@/components/RetryState';
+import useGlobalStyles from '@/styles/global';
+import {Colors} from '@/styles/theme/colors';
+import useColors from '@/styles/theme/useColors';
 
 interface DeviceItemProps {
   device: Device;
@@ -14,6 +16,8 @@ interface DeviceItemProps {
 }
 
 function DeviceItem({device, onSelect}: DeviceItemProps) {
+  const colors = useColors();
+  const s = useMemo(() => createStyles(colors), [colors]);
   return (
     <TouchableOpacity onPress={() => onSelect(device)} style={s.deviceItem} activeOpacity={0.7}>
       <Card style={s.deviceCard}>
@@ -34,6 +38,9 @@ function DeviceItem({device, onSelect}: DeviceItemProps) {
 export default function SelectDevice() {
   const {serverUrl} = useLocalSearchParams<{serverUrl: string}>();
   const router = useRouter();
+  const colors = useColors();
+  const gs = useGlobalStyles();
+  const s = useMemo(() => createStyles(colors), [colors]);
   console.log('Server URL:', serverUrl);
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,7 +103,7 @@ export default function SelectDevice() {
 
   if (loading) {
     return (
-      <View style={[gs.container, s.centerContent]}>
+      <View style={[gs.container, gs.centerContent]}>
         <ActivityIndicator size="large" color={colors.text} />
         <Text style={s.loadingText}>디바이스 목록을 불러오는 중...</Text>
       </View>
@@ -104,14 +111,7 @@ export default function SelectDevice() {
   }
 
   if (error) {
-    return (
-      <View style={[gs.container, s.centerContent]}>
-        <Text style={s.errorText}>{error}</Text>
-        <TouchableOpacity onPress={loadDevices} style={s.retryButton}>
-          <Text style={s.retryButtonText}>다시 시도</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    return <RetryState message={error} onRetry={loadDevices} />;
   }
 
   return (
@@ -132,101 +132,78 @@ export default function SelectDevice() {
   );
 }
 
-const s = StyleSheet.create({
-  title: {
-    fontSize: 28,
-    fontFamily: 'SuitBold',
-    color: colors.text,
-    marginBottom: 8,
-    marginTop: 20,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'SuitRegular',
-    color: colors.textSecondary,
-    marginBottom: 24,
-  },
-  centerContent: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    fontFamily: 'SuitRegular',
-    color: colors.textSecondary,
-    marginTop: 16,
-  },
-  errorText: {
-    fontSize: 16,
-    fontFamily: 'SuitRegular',
-    color: colors.danger,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  retryButtonText: {
-    fontSize: 16,
-    fontFamily: 'SuitMedium',
-    color: colors.text,
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  deviceItem: {
-    marginBottom: 12,
-  },
-  deviceCard: {
-    padding: 0,
-  },
-  deviceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  deviceName: {
-    fontSize: 18,
-    fontFamily: 'SuitBold',
-    color: colors.text,
-    flex: 1,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 12,
-  },
-  online: {
-    backgroundColor: colors.success,
-  },
-  offline: {
-    backgroundColor: colors.textSecondary,
-  },
-  statusText: {
-    fontSize: 12,
-    fontFamily: 'SuitMedium',
-    color: 'white',
-  },
-  deviceDetail: {
-    fontSize: 14,
-    fontFamily: 'SuitRegular',
-    color: colors.textSecondary,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontFamily: 'SuitRegular',
-    color: colors.textSecondary,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    title: {
+      fontSize: 28,
+      fontFamily: 'SuitBold',
+      color: colors.text,
+      marginBottom: 8,
+      marginTop: 20,
+    },
+    subtitle: {
+      fontSize: 16,
+      fontFamily: 'SuitRegular',
+      color: colors.textSecondary,
+      marginBottom: 24,
+    },
+    loadingText: {
+      fontSize: 16,
+      fontFamily: 'SuitRegular',
+      color: colors.textSecondary,
+      marginTop: 16,
+    },
+    listContainer: {
+      paddingBottom: 20,
+    },
+    deviceItem: {
+      marginBottom: 12,
+    },
+    deviceCard: {
+      padding: 0,
+    },
+    deviceHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    deviceName: {
+      fontSize: 18,
+      fontFamily: 'SuitBold',
+      color: colors.text,
+      flex: 1,
+    },
+    statusBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+      marginLeft: 12,
+    },
+    online: {
+      backgroundColor: colors.success,
+    },
+    offline: {
+      backgroundColor: colors.textSecondary,
+    },
+    statusText: {
+      fontSize: 12,
+      fontFamily: 'SuitMedium',
+      color: 'white',
+    },
+    deviceDetail: {
+      fontSize: 14,
+      fontFamily: 'SuitRegular',
+      color: colors.textSecondary,
+    },
+    emptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1,
+    },
+    emptyText: {
+      fontSize: 16,
+      fontFamily: 'SuitRegular',
+      color: colors.textSecondary,
+    },
+  });

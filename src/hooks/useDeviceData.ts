@@ -26,6 +26,7 @@ export function useDeviceData() {
   });
   const [realtimeChartData, setRealtimeChartData] = useState<RealtimeDataPoint[]>([{value: 50}, {value: 50}, {value: 50}, {value: 50}]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [hasShownError, setHasShownError] = useState(false);
 
   const loadCurrentData = async (device?: Device) => {
@@ -54,6 +55,7 @@ export function useDeviceData() {
 
   const loadInitialData = async () => {
     try {
+      setError(null);
       const baseUrl = await APIStorage.getBaseURL();
       if (!baseUrl) {
         setLoading(false);
@@ -74,8 +76,9 @@ export function useDeviceData() {
 
       setSelectedDevice(device);
       await loadCurrentData(device);
-    } catch (error) {
-      console.error('Failed to load initial data:', error);
+    } catch (err) {
+      console.error('Failed to load initial data:', err);
+      setError('데이터를 불러오는데 실패했습니다.');
       if (!hasShownError) {
         setHasShownError(true);
         Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
@@ -96,6 +99,8 @@ export function useDeviceData() {
     currentData,
     realtimeChartData,
     loading,
+    error,
     loadCurrentData,
+    loadInitialData,
   };
 }

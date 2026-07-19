@@ -6,15 +6,18 @@ import ChartCard from '@/components/ChartCard';
 import Header from '@/components/Header';
 import InfoCard from '@/components/InfoCard';
 import PowerCard from '@/components/PowerCard';
+import RetryState from '@/components/RetryState';
 import {useChartData} from '@/hooks/useChartData';
 import {useDeviceData} from '@/hooks/useDeviceData';
 import {useStats} from '@/hooks/useStats';
-import gs from '@/styles/global';
-import colors from '@/styles/theme/colors';
+import useGlobalStyles from '@/styles/global';
+import useColors from '@/styles/theme/useColors';
 import {formatDateLabel} from '@/utils/date';
 
 export default function Index() {
-  const {selectedDevice, currentData, realtimeChartData, loading, loadCurrentData} = useDeviceData();
+  const colors = useColors();
+  const gs = useGlobalStyles();
+  const {selectedDevice, currentData, realtimeChartData, loading, error, loadCurrentData, loadInitialData} = useDeviceData();
   const {chartData, oldChartData, currentFeeMap, oldFeeMap, chartType, setChartType, isLoading: isChartLoading, loadChartData} = useChartData(selectedDevice);
   const {dailyStats, monthlyStats, loadAllStats} = useStats(selectedDevice);
   const [refreshing, setRefreshing] = useState(false);
@@ -67,10 +70,34 @@ export default function Index() {
 
   if (loading) {
     return (
-      <View style={[gs.container, {justifyContent: 'center', alignItems: 'center'}]}>
-        <Text style={{color: colors.text, fontSize: 16}}>데이터를 불러오는 중...</Text>
+      <View style={gs.container}>
+        <Header />
+        <ScrollView style={gs.scrollView} contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
+          <PowerCard loading currentWh={0} data={[]} />
+
+          <ChartCard chartData={[]} oldChartData={[]} chartType={chartType} currentFeeMap={{}} oldFeeMap={{}} onChartTypeChange={() => {}} formatChartData={() => []} formatOldChartData={() => []} isLoading />
+
+          <View style={s.gridRow}>
+            <InfoCard loading title="" value="" unit="" />
+            <InfoCard loading title="" value="" unit="" />
+          </View>
+
+          <View style={s.gridRow}>
+            <InfoCard loading title="" value="" unit="" />
+            <InfoCard loading title="" value="" unit="" />
+          </View>
+
+          <View style={s.gridRow}>
+            <InfoCard loading title="" value="" unit="" />
+            <InfoCard loading title="" value="" unit="" />
+          </View>
+        </ScrollView>
       </View>
     );
+  }
+
+  if (error) {
+    return <RetryState message={error} onRetry={loadInitialData} />;
   }
 
   if (!selectedDevice) {

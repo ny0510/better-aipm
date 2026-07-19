@@ -1,17 +1,21 @@
 import {useRouter} from 'expo-router';
-import React from 'react';
+import React, {useMemo} from 'react';
 import {Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import {dawonAPI} from '@/api';
 import {APIStorage, API_CONFIG} from '@/api/config';
 import Card from '@/components/Card';
-import gs from '@/styles/global';
-import colors from '@/styles/theme/colors';
+import useGlobalStyles from '@/styles/global';
+import {Colors} from '@/styles/theme/colors';
+import useColors from '@/styles/theme/useColors';
 import {MaterialIcons} from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Setting() {
   const router = useRouter();
+  const colors = useColors();
+  const gs = useGlobalStyles();
+  const s = useMemo(() => createStyles(colors), [colors]);
 
   const handleResetDevice = () => {
     Alert.alert('디바이스 재선택', '디바이스를 재선택하시겠습니까? 현재 선택된 디바이스 정보가 초기화되고, 디바이스 선택 화면으로 돌아갑니다.', [
@@ -38,7 +42,7 @@ export default function Setting() {
   return (
     <View style={gs.container}>
       <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>설정</Text>
@@ -113,54 +117,55 @@ export default function Setting() {
   );
 }
 
-const s = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 15,
-    paddingHorizontal: 20,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontFamily: 'SuitSemiBold',
-    color: colors.text,
-  },
-  scrollContent: {
-    gap: 14,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  settingItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    flex: 1,
-  },
-  settingItemTitle: {
-    fontSize: 16,
-    fontFamily: 'SuitMedium',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  settingItemSubtitle: {
-    fontSize: 14,
-    fontFamily: 'SuitRegular',
-    color: colors.textSecondary,
-  },
-  infoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 8,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginVertical: 15,
+      paddingHorizontal: 20,
+    },
+    headerTitle: {
+      fontSize: 22,
+      fontFamily: 'SuitSemiBold',
+      color: colors.text,
+    },
+    scrollContent: {
+      gap: 14,
+    },
+    settingItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 6,
+    },
+    settingItemLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 16,
+      flex: 1,
+    },
+    settingItemTitle: {
+      fontSize: 16,
+      fontFamily: 'SuitMedium',
+      color: colors.text,
+      marginBottom: 2,
+    },
+    settingItemSubtitle: {
+      fontSize: 14,
+      fontFamily: 'SuitRegular',
+      color: colors.textSecondary,
+    },
+    infoItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 6,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginVertical: 8,
+    },
+  });

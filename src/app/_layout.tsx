@@ -3,13 +3,16 @@ import {Stack} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import {StatusBar} from 'expo-status-bar';
 import {useEffect} from 'react';
+import {useColorScheme} from 'react-native';
 import {SafeAreaInsetsContext, SafeAreaProvider, SafeAreaView, initialWindowMetrics, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import colors from '@/styles/theme/colors';
+import useColors from '@/styles/theme/useColors';
 
 SplashScreen.preventAutoHideAsync();
 
 const RootLayout = () => {
+  const colors = useColors();
+  const scheme = useColorScheme();
   const [loaded, error] = useFonts({
     SuitHeavy: require('@/assets/fonts/SUIT-Heavy.ttf'),
     SuitExtraBold: require('@/assets/fonts/SUIT-ExtraBold.ttf'),
@@ -34,7 +37,7 @@ const RootLayout = () => {
 
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <StatusBar style="dark" />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <SafeAreaView style={{flex: 1, backgroundColor: colors.background}}>
         <Stack screenOptions={{contentStyle: {backgroundColor: colors.background}, headerShown: false}}>
           <Stack.Screen name="index" />

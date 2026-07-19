@@ -1,9 +1,11 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 
 import Card from '@/components/Card';
-import colors from '@/styles/theme/colors';
+import {Colors} from '@/styles/theme/colors';
+import useColors from '@/styles/theme/useColors';
 import {MaterialIcons} from '@expo/vector-icons';
+import ContentLoader, {Rect} from 'react-content-loader/native';
 
 interface InfoCardProps {
   title: string;
@@ -13,9 +15,24 @@ interface InfoCardProps {
   changeValue?: number;
   changeType?: 'increase' | 'decrease';
   changeLabel?: string;
+  loading?: boolean;
 }
 
-export default function InfoCard({title, value, unit, icon, changeValue, changeType, changeLabel}: InfoCardProps) {
+export default function InfoCard({title, value, unit, icon, changeValue, changeType, changeLabel, loading = false}: InfoCardProps) {
+  const colors = useColors();
+  const s = useMemo(() => createStyles(colors), [colors]);
+
+  if (loading) {
+    return (
+      <Card style={s.infoCard}>
+        <ContentLoader speed={1.2} width="100%" height={60} viewBox="0 0 200 60" backgroundColor={colors.border} foregroundColor={colors.card}>
+          <Rect x="0" y="0" rx="4" ry="4" width="120" height="14" />
+          <Rect x="0" y="26" rx="6" ry="6" width="90" height="26" />
+        </ContentLoader>
+      </Card>
+    );
+  }
+
   return (
     <Card style={s.infoCard}>
       <View style={s.infoHeader}>
@@ -41,53 +58,54 @@ export default function InfoCard({title, value, unit, icon, changeValue, changeT
   );
 }
 
-const s = StyleSheet.create({
-  infoTitle: {
-    fontSize: 16,
-    fontFamily: 'SuitSemiBold',
-    color: colors.text,
-  },
-  infoCard: {
-    justifyContent: 'space-between',
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    gap: 1,
-  },
-  infoContent: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    flexWrap: 'wrap',
-    gap: 2,
-  },
-  infoValue: {
-    fontSize: 30,
-    letterSpacing: -1.5,
-    fontVariant: ['tabular-nums'],
-    fontFamily: 'SuitBold',
-    color: colors.text,
-  },
-  infoUnit: {
-    fontSize: 20,
-    fontFamily: 'SuitRegular',
-    color: colors.text,
-  },
-  changeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-    gap: 4,
-  },
-  changeText: {
-    fontSize: 13,
-    fontFamily: 'SuitSemiBold',
-    fontWeight: '600',
-  },
-  changeLabel: {
-    fontSize: 12,
-    fontFamily: 'SuitRegular',
-    color: colors.textSecondary,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    infoTitle: {
+      fontSize: 16,
+      fontFamily: 'SuitSemiBold',
+      color: colors.text,
+    },
+    infoCard: {
+      justifyContent: 'space-between',
+    },
+    infoHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+      gap: 1,
+    },
+    infoContent: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      flexWrap: 'wrap',
+      gap: 2,
+    },
+    infoValue: {
+      fontSize: 30,
+      letterSpacing: -1.5,
+      fontVariant: ['tabular-nums'],
+      fontFamily: 'SuitBold',
+      color: colors.text,
+    },
+    infoUnit: {
+      fontSize: 20,
+      fontFamily: 'SuitRegular',
+      color: colors.text,
+    },
+    changeContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 6,
+      gap: 4,
+    },
+    changeText: {
+      fontSize: 13,
+      fontFamily: 'SuitSemiBold',
+      fontWeight: '600',
+    },
+    changeLabel: {
+      fontSize: 12,
+      fontFamily: 'SuitRegular',
+      color: colors.textSecondary,
+    },
+  });

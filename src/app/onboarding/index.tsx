@@ -1,14 +1,16 @@
 import {useRouter} from 'expo-router';
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 
 import Card from '@/components/Card';
-import gs from '@/styles/global';
-import colors from '@/styles/theme/colors';
+import {Colors} from '@/styles/theme/colors';
+import useColors from '@/styles/theme/useColors';
 import {MaterialIcons} from '@expo/vector-icons';
 
 export default function Onboarding() {
   const router = useRouter();
+  const colors = useColors();
+  const s = useMemo(() => createStyles(colors), [colors]);
   const [serverUrl, setServerUrl] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
@@ -146,101 +148,102 @@ export default function Onboarding() {
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    justifyContent: 'space-between',
-    minHeight: '100%',
-  },
-  welcomeSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputCard: {
-    marginBottom: 20,
-    flex: 0,
-  },
-  title: {
-    fontSize: 28,
-    fontFamily: 'SuitBold',
-    letterSpacing: -1,
-    color: colors.text,
-    marginTop: 20,
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'SuitRegular',
-    letterSpacing: -0.5,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  inputContainer: {
-    marginBottom: 18,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontFamily: 'SuitSemiBold',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    backgroundColor: colors.background,
-    gap: 10,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: 'SuitRegular',
-    color: colors.text,
-    padding: 0,
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 6,
-  },
-  errorText: {
-    fontSize: 14,
-    fontFamily: 'SuitRegular',
-    color: colors.danger,
-  },
-  successContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: 6,
-  },
-  successText: {
-    fontSize: 14,
-    fontFamily: 'SuitRegular',
-    color: colors.success,
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    gap: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontFamily: 'SuitSemiBold',
-    color: colors.background,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    container: {
+      flexGrow: 1,
+      paddingHorizontal: 20,
+      justifyContent: 'space-between',
+      minHeight: '100%',
+    },
+    welcomeSection: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputCard: {
+      marginBottom: 20,
+      flex: 0,
+    },
+    title: {
+      fontSize: 28,
+      fontFamily: 'SuitBold',
+      letterSpacing: -1,
+      color: colors.text,
+      marginTop: 20,
+      marginBottom: 12,
+    },
+    subtitle: {
+      fontSize: 16,
+      fontFamily: 'SuitRegular',
+      letterSpacing: -0.5,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 24,
+    },
+    inputContainer: {
+      marginBottom: 18,
+    },
+    inputLabel: {
+      fontSize: 16,
+      fontFamily: 'SuitSemiBold',
+      color: colors.text,
+      marginBottom: 12,
+    },
+    inputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      backgroundColor: colors.background,
+      gap: 10,
+    },
+    textInput: {
+      flex: 1,
+      fontSize: 16,
+      fontFamily: 'SuitRegular',
+      color: colors.text,
+      padding: 0,
+    },
+    errorContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 8,
+      gap: 6,
+    },
+    errorText: {
+      fontSize: 14,
+      fontFamily: 'SuitRegular',
+      color: colors.danger,
+    },
+    successContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 8,
+      gap: 6,
+    },
+    successText: {
+      fontSize: 14,
+      fontFamily: 'SuitRegular',
+      color: colors.success,
+    },
+    button: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primary,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+      gap: 8,
+    },
+    buttonDisabled: {
+      opacity: 0.6,
+    },
+    buttonText: {
+      fontSize: 16,
+      fontFamily: 'SuitSemiBold',
+      color: colors.background,
+    },
+  });

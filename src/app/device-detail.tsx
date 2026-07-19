@@ -1,18 +1,24 @@
 import {useRouter} from 'expo-router';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Alert, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 import {DeviceManager} from '@/api';
 import {Device} from '@/api/types';
 import Card from '@/components/Card';
-import gs from '@/styles/global';
-import colors from '@/styles/theme/colors';
+import RetryState from '@/components/RetryState';
+import useGlobalStyles from '@/styles/global';
+import {Colors} from '@/styles/theme/colors';
+import useColors from '@/styles/theme/useColors';
 import {MaterialIcons} from '@expo/vector-icons';
 
 export default function DeviceDetail() {
   const router = useRouter();
+  const colors = useColors();
+  const gs = useGlobalStyles();
+  const s = useMemo(() => createStyles(colors), [colors]);
   const [device, setDevice] = useState<Device | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -21,6 +27,7 @@ export default function DeviceDetail() {
 
   const loadDeviceData = async () => {
     try {
+      setError(null);
       const selectedDevice = await DeviceManager.getSelectedDevice();
       if (!selectedDevice) {
         Alert.alert('오류', '선택된 디바이스가 없습니다.');
@@ -28,9 +35,9 @@ export default function DeviceDetail() {
         return;
       }
       setDevice(selectedDevice);
-    } catch (error) {
-      console.error('Failed to load device data:', error);
-      Alert.alert('오류', '디바이스 정보를 불러오는데 실패했습니다.');
+    } catch (err) {
+      console.error('Failed to load device data:', err);
+      setError('디바이스 정보를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -43,8 +50,8 @@ export default function DeviceDetail() {
       if (selectedDevice) {
         setDevice(selectedDevice);
       }
-    } catch (error) {
-      console.error('Failed to refresh device data:', error);
+    } catch (err) {
+      console.error('Failed to refresh device data:', err);
       Alert.alert('오류', '데이터 새로고침에 실패했습니다.');
     } finally {
       setRefreshing(false);
@@ -73,6 +80,10 @@ export default function DeviceDetail() {
     );
   }
 
+  if (error) {
+    return <RetryState message={error} onRetry={loadDeviceData} />;
+  }
+
   if (!device) {
     return (
       <View style={[gs.container, {justifyContent: 'center', alignItems: 'center'}]}>
@@ -84,7 +95,7 @@ export default function DeviceDetail() {
   return (
     <View style={gs.container}>
       <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={s.headerTitle}>디바이스 상세정보</Text>
@@ -110,24 +121,6 @@ export default function DeviceDetail() {
           </View>
         </Card>
 
-        <Card title="네트워크 정보">
-          <View style={s.infoSection}>
-            <InfoRow label="IP 주소" value={device.device_profile.device_ip} icon="lan" expandable />
-            <View style={s.separator} />
-            <InfoRow label="Wi-Fi SSID" value={device.device_profile.ssid_info} icon="wifi" expandable />
-            <View style={s.separator} />
-            <InfoRow label="서비스 번호" value={device.device_profile.service_no} icon="tag" expandable />
-          </View>
-        </Card>
-
-        <Card title="펌웨어 정보">
-          <View style={s.infoSection}>
-            <InfoRow label="현재 버전" value={device.device_profile.device_version} icon="system-update" />
-            <View style={s.separator} />
-            <InfoRow label="최신 버전" value={device.device_profile.max_version} icon="system-update-alt" />
-          </View>
-        </Card>
-
         <Card title="전원 및 제어">
           <View style={s.infoSection}>
             <InfoRow label="전원 상태" value={formatBoolean(device.device_profile.power)} icon="power-settings-new" iconColor={device.device_profile.power === 'true' ? colors.success : colors.danger} />
@@ -140,7 +133,25 @@ export default function DeviceDetail() {
           </View>
         </Card>
 
-        <Card title="스케줄 및 자동화">
+        <Card title="네트워크 정보" collapsible defaultExpanded={false}>
+          <View style={s.infoSection}>
+            <InfoRow label="IP 주소" value={device.device_profile.device_ip} icon="lan" expandable />
+            <View style={s.separator} />
+            <InfoRow label="Wi-Fi SSID" value={device.device_profile.ssid_info} icon="wifi" expandable />
+            <View style={s.separator} />
+            <InfoRow label="서비스 번호" value={device.device_profile.service_no} icon="tag" expandable />
+          </View>
+        </Card>
+
+        <Card title="펌웨어 정보" collapsible defaultExpanded={false}>
+          <View style={s.infoSection}>
+            <InfoRow label="현재 버전" value={device.device_profile.device_version} icon="system-update" />
+            <View style={s.separator} />
+            <InfoRow label="최신 버전" value={device.device_profile.max_version} icon="system-update-alt" />
+          </View>
+        </Card>
+
+        <Card title="스케줄 및 자동화" collapsible defaultExpanded={false}>
           <View style={s.infoSection}>
             <InfoRow label="스케줄" value={formatBoolean(device.device_profile.schedules.enable)} icon="schedule" />
             <View style={s.separator} />
@@ -154,7 +165,7 @@ export default function DeviceDetail() {
           </View>
         </Card>
 
-        <Card title="전기 요금 설정">
+        <Card title="전기 요금 설정" collapsible defaultExpanded={false}>
           <View style={s.infoSection}>
             <InfoRow label="요금 기준일" value={`매월 ${device.device_profile.fee_date}일`} icon="calendar-today" />
             <View style={s.separator} />
@@ -166,7 +177,7 @@ export default function DeviceDetail() {
           </View>
         </Card>
 
-        <Card title="이상 감지 통계">
+        <Card title="이상 감지 통계" collapsible defaultExpanded={false}>
           <View style={s.infoSection}>
             <InfoRow label="과전류 감지 횟수" value={`${device.device_profile.over_cnt}회`} icon="error" iconColor={parseInt(device.device_profile.over_cnt || '0') > 0 ? colors.danger : colors.text} />
             <View style={s.separator} />
@@ -179,7 +190,7 @@ export default function DeviceDetail() {
         </Card>
 
         {device.prod_info.prod_name && (
-          <Card title="제품 정보">
+          <Card title="제품 정보" collapsible defaultExpanded={false}>
             <View style={s.infoSection}>
               <InfoRow label="제품명" value={device.prod_info.prod_name} icon="devices-other" />
               {device.prod_info.prod_manu_name && (
@@ -216,7 +227,7 @@ export default function DeviceDetail() {
           </Card>
         )}
 
-        <Card title="사용자 알림 설정">
+        <Card title="사용자 알림 설정" collapsible defaultExpanded={false}>
           <View style={s.infoSection}>
             <InfoRow label="푸시 알림" value={formatBoolean(device.user_profile.push_alarm)} icon="notifications-active" />
             <View style={s.separator} />
@@ -229,7 +240,7 @@ export default function DeviceDetail() {
         </Card>
 
         {device.device_profile.gateway_id && (
-          <Card title="게이트웨이 정보">
+          <Card title="게이트웨이 정보" collapsible defaultExpanded={false}>
             <View style={s.infoSection}>
               <InfoRow label="게이트웨이 ID" value={device.device_profile.gateway_id} icon="router" expandable />
               <View style={s.separator} />
@@ -240,7 +251,7 @@ export default function DeviceDetail() {
           </Card>
         )}
 
-        <Card title="AI 및 ECS 상태">
+        <Card title="AI 및 ECS 상태" collapsible defaultExpanded={false}>
           <View style={s.infoSection}>
             <InfoRow label="AI 상태" value={device.device_profile.ai_status === '1' ? '활성화' : '비활성화'} icon="psychology" />
             <View style={s.separator} />
@@ -249,7 +260,7 @@ export default function DeviceDetail() {
         </Card>
 
         {device.ir_device_id && (
-          <Card title="IR 정보">
+          <Card title="IR 정보" collapsible defaultExpanded={false}>
             <View style={s.infoSection}>
               <InfoRow label="IR 디바이스 ID" value={device.ir_device_id} icon="sensors" expandable />
               {device.ir_device_name && (
@@ -266,7 +277,7 @@ export default function DeviceDetail() {
           </Card>
         )}
 
-        <Card title="그룹 정보">
+        <Card title="그룹 정보" collapsible defaultExpanded={false}>
           <View style={s.infoSection}>
             <InfoRow label="그룹" value={device.group} icon="folder" />
             {device.low_group_id && (
@@ -293,6 +304,8 @@ interface InfoRowProps {
 }
 
 function InfoRow({label, value, icon, iconColor, expandable = false}: InfoRowProps) {
+  const colors = useColors();
+  const s = useMemo(() => createStyles(colors), [colors]);
   const [expanded, setExpanded] = useState(false);
 
   const toggleExpanded = () => {
@@ -324,62 +337,63 @@ function InfoRow({label, value, icon, iconColor, expandable = false}: InfoRowPro
   return <View style={s.infoRow}>{RowContent}</View>;
 }
 
-const s = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 15,
-    paddingHorizontal: 20,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontFamily: 'SuitSemiBold',
-    color: colors.text,
-  },
-  scrollContent: {
-    gap: 14,
-  },
-  infoSection: {
-    gap: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-    gap: 12,
-  },
-  infoRowExpanded: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-  infoRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexShrink: 0,
-  },
-  infoLabel: {
-    fontSize: 15,
-    fontFamily: 'SuitMedium',
-    color: colors.text,
-  },
-  infoValue: {
-    fontSize: 15,
-    fontFamily: 'SuitRegular',
-    color: colors.textSecondary,
-    textAlign: 'right',
-    flex: 1,
-  },
-  infoValueExpanded: {
-    textAlign: 'left',
-    flex: 0,
-    marginTop: 4,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 4,
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginVertical: 15,
+      paddingHorizontal: 20,
+    },
+    headerTitle: {
+      fontSize: 22,
+      fontFamily: 'SuitSemiBold',
+      color: colors.text,
+    },
+    scrollContent: {
+      gap: 14,
+    },
+    infoSection: {
+      gap: 8,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 6,
+      gap: 12,
+    },
+    infoRowExpanded: {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+    },
+    infoRowLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flexShrink: 0,
+    },
+    infoLabel: {
+      fontSize: 15,
+      fontFamily: 'SuitMedium',
+      color: colors.text,
+    },
+    infoValue: {
+      fontSize: 15,
+      fontFamily: 'SuitRegular',
+      color: colors.textSecondary,
+      textAlign: 'right',
+      flex: 1,
+    },
+    infoValueExpanded: {
+      textAlign: 'left',
+      flex: 0,
+      marginTop: 4,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginVertical: 4,
+    },
+  });

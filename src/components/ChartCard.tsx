@@ -1,10 +1,11 @@
 import React, {useMemo} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View, useColorScheme} from 'react-native';
 import {LineChart} from 'react-native-gifted-charts';
 
 import Card from '@/components/Card';
-import Skeleton from '@/components/Skeleton';
-import colors from '@/styles/theme/colors';
+import {Colors} from '@/styles/theme/colors';
+import useColors from '@/styles/theme/useColors';
+import ContentLoader, {Rect} from 'react-content-loader/native';
 
 interface ChartCardProps {
   chartData: any[];
@@ -21,6 +22,10 @@ interface ChartCardProps {
 const formatFee = (fee: number | undefined) => (fee !== undefined ? `${Math.round(fee).toLocaleString()}원` : '');
 
 export default function ChartCard({chartData, oldChartData, chartType, currentFeeMap, oldFeeMap, onChartTypeChange, formatChartData, formatOldChartData, isLoading = false}: ChartCardProps) {
+  const colors = useColors();
+  const s = useMemo(() => createStyles(colors), [colors]);
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
   const chartTypeOptions = [
     {key: 'hour', label: '시간별'},
     {key: 'day', label: '일별'},
@@ -43,10 +48,28 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
   const legendText = getLegendText();
   const showPreviousLegend = chartType !== 'hour';
 
-  const currentData = useMemo(() => formatChartData(), [chartData, chartType]);
+  const withExtremaLabels = (points: any[]) => {
+    if (points.length === 0) return points;
+    let minIdx = 0,
+      maxIdx = 0;
+    points.forEach((p, i) => {
+      if (p.value < points[minIdx].value) minIdx = i;
+      if (p.value > points[maxIdx].value) maxIdx = i;
+    });
+    return points.map((p, i) => {
+      if (i === maxIdx) return {...p, dataPointText: `${p.value.toFixed(1)}${p.unit}`, textShiftY: -16, textColor: colors.text, textFontSize: 11};
+      if (i === minIdx && minIdx !== maxIdx) return {...p, dataPointText: `${p.value.toFixed(1)}${p.unit}`, textShiftY: 16, textColor: colors.textSecondary, textFontSize: 11};
+      return p;
+    });
+  };
+
+  const currentData = useMemo(() => withExtremaLabels(formatChartData()), [chartData, chartType, colors]);
   const previousData = useMemo(() => (chartType === 'hour' ? [] : formatOldChartData()), [oldChartData, chartType]);
 
-  const maxValue = useMemo(() => (chartData.length > 0 ? Math.max(...chartData.map(d => d.value)) * 1.2 : 100), [chartData]);
+  const maxValue = useMemo(() => {
+    const allValues = [...chartData.map(d => d.value), ...oldChartData.map(d => d.value)];
+    return allValues.length > 0 ? Math.max(...allValues) * 1.2 : 100;
+  }, [chartData, oldChartData]);
 
   return (
     <Card>
@@ -60,85 +83,83 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
         </View>
       </View>
 
-      <LineChart
-        data={currentData}
-        data2={previousData}
-        hideDataPoints
-        hideYAxisText
-        hideAxesAndRules
-        hideRules
-        areaChart
-        labelsExtraHeight={25}
-        initialSpacing={0}
-        endSpacing={0}
-        maxValue={maxValue}
-        color1={colors.primary}
-        startFillColor1={colors.primary}
-        startOpacity1={0.4}
-        color2={colors.secondary}
-        startFillColor2={colors.secondary}
-        startOpacity2={0.3}
-        endOpacity={0}
-        adjustToWidth
-        height={150}
-        curved
-        pointerConfig={{
-          activatePointersOnLongPress: true,
-          activatePointersDelay: 300,
-          autoAdjustPointerLabelPosition: true,
-          pointerStripUptoDataPoint: true,
-          pointerStripColor: colors.primary,
-          pointerStripWidth: 2,
-          stripOverPointer: true,
-          hidePointers: true,
-          pointerColor: colors.textSecondary,
-          pointerLabelComponent: items => {
-            if (!items || items.length === 0 || !items[0]) return null;
+      {isLoading ? (
+        <ContentLoader speed={1.2} width="100%" height={150} viewBox="0 0 400 150" backgroundColor={colors.border} foregroundColor={colors.card}>
+          <Rect x="0" y="0" rx="16" ry="16" width="400" height="150" />
+        </ContentLoader>
+      ) : (
+        <LineChart
+          data={currentData}
+          data2={previousData}
+          hideDataPoints
+          hideYAxisText
+          hideAxesAndRules
+          hideRules
+          areaChart
+          labelsExtraHeight={25}
+          initialSpacing={0}
+          endSpacing={0}
+          maxValue={maxValue}
+          color1={colors.primary}
+          startFillColor1={colors.primary}
+          startOpacity1={isDark ? 0.2 : 0.4}
+          color2={colors.secondary}
+          startFillColor2={colors.secondary}
+          startOpacity2={isDark ? 0.1 : 0.3}
+          endOpacity={0}
+          adjustToWidth
+          height={150}
+          curved
+          xAxisLabelTextStyle={{color: colors.textSecondary, fontSize: 12}}
+          pointerConfig={{
+            activatePointersOnLongPress: true,
+            activatePointersDelay: 300,
+            autoAdjustPointerLabelPosition: true,
+            pointerStripUptoDataPoint: true,
+            pointerStripColor: colors.primary,
+            pointerStripWidth: 2,
+            stripOverPointer: true,
+            hidePointers: true,
+            pointerColor: colors.textSecondary,
+            pointerLabelComponent: items => {
+              if (!items || items.length === 0 || !items[0]) return null;
 
-            const current = items[0];
-            const previous = items.length >= 2 ? items[1] : null;
-            const hasPrevious = previous && previous.value > 0;
+              const current = items[0];
+              const previous = items.length >= 2 ? items[1] : null;
+              const hasPrevious = previous && previous.value > 0;
 
-            const currentFee = formatFee(currentFeeMap[current.rawDate]);
-            const previousFee = hasPrevious ? formatFee(oldFeeMap[previous.rawDate]) : '';
+              const currentFee = formatFee(currentFeeMap[current.rawDate]);
+              const previousFee = hasPrevious ? formatFee(oldFeeMap[previous.rawDate]) : '';
 
-            return (
-              <View
-                style={{
-                  minWidth: 100,
-                  justifyContent: 'center',
-                  marginTop: 30,
-                  marginLeft: -40,
-                  gap: 4,
-                }}>
-                <View style={{paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.card}}>
-                  <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.text, fontSize: 13}}>{current.date}</Text>
-                </View>
-                <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary}}>
-                  <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${current.value.toFixed(1)} ${current.unit}`}</Text>
-                </View>
-                {currentFee ? (
-                  <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary}}>
-                    <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{currentFee}</Text>
+              return (
+                <View
+                  style={{
+                    minWidth: 100,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: 30,
+                    marginLeft: -40,
+                    gap: 4,
+                  }}>
+                  <View style={{paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10, backgroundColor: colors.card}}>
+                    <Text style={{fontWeight: 'bold', color: colors.text, fontSize: 13, textAlign: 'center'}}>{current.date}</Text>
                   </View>
-                ) : null}
-                {hasPrevious && (
-                  <>
-                    <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary}}>
-                      <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{`${previous.value.toFixed(1)} ${previous.unit}`}</Text>
+                  <View style={{flexDirection: 'row', alignItems: 'baseline', gap: 6, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.primary}}>
+                    <Text style={{fontSize: 12, fontWeight: 'bold', color: colors.background}}>{`${current.value.toFixed(1)} ${current.unit}`}</Text>
+                    {currentFee ? <Text style={{fontSize: 11, color: colors.background, opacity: 0.85}}>{currentFee}</Text> : null}
+                  </View>
+                  {hasPrevious && (
+                    <View style={{flexDirection: 'row', alignItems: 'baseline', gap: 6, paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary}}>
+                      <Text style={{fontSize: 12, fontWeight: 'bold', color: colors.background}}>{`${previous.value.toFixed(1)} ${previous.unit}`}</Text>
+                      {previousFee ? <Text style={{fontSize: 11, color: colors.background, opacity: 0.85}}>{previousFee}</Text> : null}
                     </View>
-                    {previousFee ? (
-                      <View style={{paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16, backgroundColor: colors.secondary}}>
-                        <Text style={{fontWeight: 'bold', textAlign: 'center', color: colors.background, fontSize: 12}}>{previousFee}</Text>
-                      </View>
-                    ) : null}
-                  </>
-                )}
-              </View>
-            );
-          },
-        }}
-      />
+                  )}
+                </View>
+              );
+            },
+          }}
+        />
+      )}
 
       <View style={s.legendContainer}>
         <View style={s.legendItem}>
@@ -156,52 +177,53 @@ export default function ChartCard({chartData, oldChartData, chartType, currentFe
   );
 }
 
-const s = StyleSheet.create({
-  tabContainer: {
-    flexDirection: 'row',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-  },
-  tabButton: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  tabText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '400',
-    marginVertical: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    fontFamily: 'SuitRegular',
-  },
-  tabTextActive: {
-    color: colors.text,
-    backgroundColor: colors.border,
-    fontFamily: 'SuitBold',
-  },
-  legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 15,
-    gap: 20,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  legendText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-});
+const createStyles = (colors: Colors) =>
+  StyleSheet.create({
+    tabContainer: {
+      flexDirection: 'row',
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
+      overflow: 'hidden',
+    },
+    tabButton: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    tabText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '400',
+      marginVertical: 6,
+      paddingVertical: 4,
+      paddingHorizontal: 12,
+      borderRadius: 10,
+      fontFamily: 'SuitRegular',
+    },
+    tabTextActive: {
+      color: colors.text,
+      backgroundColor: colors.border,
+      fontFamily: 'SuitBold',
+    },
+    legendContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginBottom: 15,
+      gap: 20,
+    },
+    legendItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    legendDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+    },
+    legendText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+  });
