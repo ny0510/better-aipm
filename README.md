@@ -12,7 +12,6 @@
 - 예상 전기요금 계산
 - ~~기기 제어 (ON/OFF) (예정)~~
 - ~~다크모드 지원 (예정)~~
-- ~~다국어 지원 (예정)~~
 - ~~알림 기능 (예정)~~
 
 | <img src="./images/screenshot-1.png" height="500"/> | <img src="./images/screenshot-2.png" height="500"/> |
