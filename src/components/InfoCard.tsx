@@ -43,7 +43,7 @@ export default function InfoCard({title, value, unit, icon, changeValue, changeT
         <Text style={s.infoValue}>{typeof value === 'number' ? value.toLocaleString() : value}</Text>
         {unit && <Text style={s.infoUnit}>{unit}</Text>}
       </View>
-      {changeValue && changeType && (
+      {changeValue && changeType ? (
         <View style={s.changeContainer}>
           <MaterialIcons name={changeType === 'increase' ? 'trending-up' : 'trending-down'} size={16} color={changeType === 'increase' ? colors.danger : colors.success} />
           <Text style={[s.changeText, {color: changeType === 'increase' ? colors.danger : colors.success}]}>
@@ -53,7 +53,7 @@ export default function InfoCard({title, value, unit, icon, changeValue, changeT
           </Text>
           <Text style={s.changeLabel}>{changeLabel}</Text>
         </View>
-      )}
+      ) : null}
     </Card>
   );
 }
@@ -66,7 +66,7 @@ const createStyles = (colors: Colors) =>
       color: colors.text,
     },
     infoCard: {
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
     },
     infoHeader: {
       flexDirection: 'row',
