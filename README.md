@@ -10,8 +10,10 @@
 - 기기 온도 모니터링
 - 기기 상태 조회
 - 예상 전기요금 계산
+- 다크모드 지원
+- iOS 위젯 지원
+- ~~Android 위젯 지원 (예정)~~
 - ~~기기 제어 (ON/OFF) (예정)~~
-- ~~다크모드 지원 (예정)~~
 - ~~알림 기능 (예정)~~
 
 | <img src="./images/screenshot-1.png" height="500"/> | <img src="./images/screenshot-2.png" height="500"/> | <img src="./images/screenshot-3.png" height="500"/> | <img src="./images/screenshot-4.png" height="500"/> | <img src="./images/screenshot-5.png" height="500"/> | <img src="./images/screenshot-6.png" height="500"/> |
