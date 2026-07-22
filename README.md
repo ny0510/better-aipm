@@ -14,5 +14,6 @@
 - ~~다크모드 지원 (예정)~~
 - ~~알림 기능 (예정)~~
 
-| <img src="./images/screenshot-1.png" height="500"/> | <img src="./images/screenshot-2.png" height="500"/> |
-| --------------------------------------------------- | --------------------------------------------------- |
+| <img src="./images/screenshot-1.png" height="500"/> | <img src="./images/screenshot-2.png" height="500"/> | <img src="./images/screenshot-3.png" height="500"/> | <img src="./images/screenshot-4.png" height="500"/> |
+| <img src="./images/screenshot-5.png" height="500"/> | <img src="./images/screenshot-6.png" height="500"/> |
+| --------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- |
